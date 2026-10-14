@@ -4,6 +4,13 @@
 
 A standalone browser-playable, single-player fantasy survival/life-simulation RPG prototype, designed as the beginning of a larger game inspired by the user's Tervac world wiki.
 
+## Play each version
+
+- **[Asterfall 2.2 — Solterra Visual Alpha](https://willow-sage.github.io/Asterfall-2.1/v2.2/)** — dedicated version with revised third-person character silhouettes, terrain colors, and visibly labeled 2.2 title screen.
+- **[Asterfall 2.1 — Original 3D Alpha](https://willow-sage.github.io/Asterfall-2.1/)** — preserved at the original address.
+
+Both are hosted from the same GitHub Pages repository, but use separate paths. Browser-based local saves remain compatible. The 2.2 art is a procedural *visual alpha*, not the finished anime-light-novel models shown in the approved concept boards.
+
 ## Play
 
 Open `index.html` in a modern browser or deploy with GitHub Pages. Progress is stored in the current browser; clearing site data may erase saves.
