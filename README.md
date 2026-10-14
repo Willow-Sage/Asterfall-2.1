@@ -19,7 +19,7 @@ Open `index.html` in a modern browser or deploy with GitHub Pages. Progress is s
 
 ## Status and scope
 
-This is an **anime-inspired isometric 2D/2.5D prototype**, not anime-realistic 3D. It is not yet multiplayer, a player-run economy, or a complete rendition of Solterra. Locations outside the playable slice are atlas/lore placeholders and should not be represented as fully implemented.
+This is a **third-person WebGL2 3D alpha** (with an isometric 2D fallback), using procedural stylized models; it has not yet reached anime-realistic graphical fidelity. It is not yet multiplayer, a player-run economy, or a complete rendition of Solterra. Locations outside the playable slice are atlas/lore placeholders and should not be represented as fully implemented.
 
 ## Deployment
 
