@@ -16,11 +16,11 @@ let lastWorld='';let terrainMesh=null,staticMesh=null,resourcesMesh=null,peopleM
 const UP=[0,1,0], MAX_VIEW=105;
 try{const pref=JSON.parse(localStorage.getItem('asterfall_camera_v1')||'null');if(pref){yaw=pref.yaw??yaw;pitch=pref.pitch??pitch;distance=pref.distance??distance}}catch(_){ }
 function saveCamera(){try{localStorage.setItem('asterfall_camera_v1',JSON.stringify({yaw,pitch,distance}))}catch(_){}}
-const help=document.createElement('aside');help.id='camera-guide';help.innerHTML='<strong>✦ TERRAVELLE · 3D EXPLORATION</strong><span>WASD · walk &nbsp; Shift · sprint</span><span>Drag · orbit camera &nbsp; Scroll · zoom</span><span>E · interact &nbsp; M · atlas &nbsp; Esc · menu</span><button type="button" id="reset-camera">↺ Reset camera</button>';
+const help=document.createElement('aside');help.id='camera-guide';help.innerHTML='<strong>✦ SERENOVA · CHAPTER I</strong><span>WASD · walk &nbsp; Shift · sprint</span><span>Drag · orbit camera &nbsp; Scroll · zoom</span><span>E · interact &nbsp; M · atlas &nbsp; Esc · menu</span><button type="button" id="reset-camera">↺ Reset camera</button>';
 help.style.cssText='position:fixed;bottom:126px;right:23px;z-index:4;padding:12px 15px;display:none;gap:4px;flex-direction:column;border:1px solid #d6b78099;background:#102821d9;color:#f6e9cb;border-radius:12px;font:12px/1.6 Segoe UI,sans-serif;box-shadow:0 9px 30px #07190daa;pointer-events:auto;backdrop-filter:blur(8px)';
 help.querySelector('strong').style.cssText='font-size:10px;letter-spacing:.09em;color:#e9c78b';help.querySelector('button').style.cssText='margin-top:5px;padding:6px 10px;background:#335545;border:1px solid #d7b98588;color:#fff1cd;border-radius:7px;cursor:pointer';
 document.body.appendChild(help);help.querySelector('button').addEventListener('click',()=>{yaw=.7;pitch=.49;distance=17;saveCamera()});
-const legend=document.createElement('div');legend.id='view-mode';legend.textContent='3D • THIRD PERSON';legend.style.cssText='position:fixed;bottom:91px;right:25px;z-index:3;font:9px Segoe UI,sans-serif;letter-spacing:.14em;color:#e4d6b5;background:#17362ec9;padding:5px 9px;border:1px solid #c8a87566;border-radius:5px;pointer-events:none';document.body.appendChild(legend);
+const legend=document.createElement('div');legend.id='view-mode';legend.textContent='ASTERFALL 2.2 • THIRD PERSON';legend.style.cssText='position:fixed;bottom:91px;right:25px;z-index:3;font:9px Segoe UI,sans-serif;letter-spacing:.14em;color:#e4d6b5;background:#17362ec9;padding:5px 9px;border:1px solid #c8a87566;border-radius:5px;pointer-events:none';document.body.appendChild(legend);
 const vert=`#version 300 es
 precision highp float;
 layout(location=0) in vec3 aPos;
@@ -32,7 +32,7 @@ uniform float uTime;
 out vec3 vColor;
 out float vFog;
 out float vHeight;
-void main(){vec3 pos=aPos;gl_Position=uVP*vec4(pos,1.0);vec3 N=normalize(aNormal);vec3 sun=normalize(vec3(-.42,.82,.40));float diffuse=max(dot(N,sun),.0);float shade=.67+.37*diffuse;vColor=aColor*shade;vHeight=pos.y;vFog=clamp((distance(pos,uEye)-40.0)/136.0,0.0,.91);}`;
+void main(){vec3 pos=aPos;gl_Position=uVP*vec4(pos,1.0);vec3 N=normalize(aNormal);vec3 sun=normalize(vec3(-.42,.82,.40));float diffuse=max(dot(N,sun),.0);float shade=.66+.34*floor(diffuse*3.0+0.5)/3.0;vColor=aColor*shade;vHeight=pos.y;vFog=clamp((distance(pos,uEye)-40.0)/136.0,0.0,.91);}`;
 const frag=`#version 300 es
 precision highp float;
 in vec3 vColor;
@@ -49,7 +49,7 @@ function mult(a,b){let r=new Float32Array(16);for(let col=0;col<4;col++)for(let 
 const sub=(a,b)=>a.map((n,i)=>n-b[i]),dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=v=>{let l=Math.hypot(...v)||1;return v.map(x=>x/l)};
 function rgb(hex){hex=String(hex||'#709574').replace('#','');if(hex.length===3)hex=hex.split('').map(x=>x+x).join('');return [parseInt(hex.slice(0,2),16)/255,parseInt(hex.slice(2,4),16)/255,parseInt(hex.slice(4,6),16)/255]}
 function tint(c,f){let v=rgb(c);return v.map(x=>Math.max(.015,Math.min(.98,x*f)))}
-const groundPalette={grass:'#729e74',dry:'#adad76',flowers:'#80ab84',forest:'#557c5c',hill:'#829479',field:'#aaaf65',town:'#b6aa82',road:'#cfbd93',river:'#549aaa',riverbank:'#95b59d',sea:'#4a98af',shore:'#ddca9e',void:'#7e9f83'};
+const groundPalette={grass:'#87a76e',dry:'#b5ae70',flowers:'#86ae7d',forest:'#557b57',hill:'#859476',field:'#cfbe77',town:'#bfb08b',road:'#cfb790',river:'#5498ac',riverbank:'#8db7a3',sea:'#398da8',shore:'#e7d0a5',void:'#7e9f83'};
 const near0=(x,z)=>Math.hypot(x-100,z-83);
 function elev(x,z){let typ=tile(x,z);if(typ==='sea'||typ==='river')return -.28;if(near0(x,z)<13)return .24;const hill=(typ==='hill'||typ==='forest')?1:0;let h=.3+noise(x*.026,z*.026,7)*.85+(noise(x*.079,z*.079,13)-.5)*.35+hill*.58;
 return Math.max(-.1,h)}
@@ -67,14 +67,55 @@ function makeTerrain(){let B=new Batch();let step=1.55;for(let z=0;z<H-1;z+=step
 function shrub(B,x,z,k){let y=ground(x,z);B.icosa(x,y+.42,z,.42,k||'#73956b')}
 function makeStatic(){let B=new Batch();for(const b of buildings){let x=b.x,z=b.y,y=ground(x,z);if(['ward','gate'].includes(b.type)){B.box(x,y,z,.4,4,.4,'#cdc2a5');B.box(x,y+3.8,z,1,.23,1,'#c5b38d');if(b.type==='ward')B.icosa(x,y+4.5,z,.7,'#75c4c2');else B.box(x,y+1.5,z,.55,.7,.55,'#c6a76e');continue}
 const w=(b.type==='inn'||b.type==='manor')?5.8:4.4,d=(b.type==='inn'||b.type==='manor')?4.9:3.5,h=b.type==='manor'?4.6:3.35;
-B.box(x,y,z,w,h,d,b.type==='workshop'?'#b4a48b':'#e0ceb0');B.roof(x,y+h,z,w+.65,d+.6,1.7,b.type==='manor'?'#76897c':b.type==='inn'?'#a86953':'#ba795a');B.box(x,y+.15,z+d/2+.03,1.05,2,.1,'#6d5542');for(let dx of [-w*.32,w*.32])B.box(x+dx,y+1.7,z+d/2+.08,.72,.85,.13,'#78adc0');B.box(x+w*.35,y+h+.7,z-.6,.48,1.5,.48,'#c4b6a2');
+B.box(x,y,z,w,h,d,b.type==='workshop'?'#b4a48b':'#f1dec4');B.roof(x,y+h,z,w+.65,d+.6,1.7,b.type==='manor'?'#76897c':b.type==='inn'?'#b76e50':'#bf7653');B.box(x,y+.15,z+d/2+.03,1.05,2,.1,'#6d5542');for(let dx of [-w*.32,w*.32])B.box(x+dx,y+1.7,z+d/2+.08,.72,.85,.13,'#78adc0');B.box(x+w*.35,y+h+.7,z-.6,.48,1.5,.48,'#c4b6a2');
 if(b.type==='manor'){for(let dx of [-w*.36,w*.36]){B.cylinder(x+dx,y,z+d*.66,.23,3.6,'#eadabe');B.cone(x+dx,y+3.6,z+d*.66,.66,1.25,'#a46a54') }} }
 for(const [a,b] of roadSegments){let dx=b[0]-a[0],dz=b[1]-a[1],dist=Math.hypot(dx,dz),steps=Math.ceil(dist/1.9);for(let s=0;s<steps;s++){let u=(s+.5)/steps,x=a[0]+dx*u,z=a[1]+dz*u,y=ground(x,z)+.045;B.box(x,y,z,2.2,.03,2.2,'#c7b592')}}
 for(let i=0;i<610;i++){let x=3+rand(i,17)*179,z=3+rand(i,31)*146;if(near0(x,z)<9||tile(x,z)==='river'||tile(x,z)==='sea'||buildings.some(b=>Math.hypot(x-b.x,z-b.y)<3))continue;let typ=tile(x,z);if((typ==='grass'||typ==='flowers'||typ==='forest')&&rand(i,71)>.39){let c=rand(i,14)>.75?'#d8b87d':rand(i,21)>.6?'#dfe2b7':'#619479';shrub(B,x,z,c)}}
 staticMesh=mesh(B)}
 function makeResources(){let B=new Batch(),r2=MAX_VIEW*MAX_VIEW,px=player.x,pz=player.y;for(const r of resources){if(!r.available||(r.x-px)**2+(r.y-pz)**2>r2)continue;let x=r.x,z=r.y,y=ground(x,z);if(r.kind==='tree'){let v=(r.variation||.5),sc=.9+v*.85;B.cylinder(x,y,z,.18*sc,2.7*sc,'#775b3d',7);if(v<.66){for(let a=0;a<3;a++)B.cone(x,y+1.5*sc+a*.72*sc,z,(1.65-a*.25)*sc,(2.3-a*.08)*sc,a%2?'#386a55':'#2e644b',7)}else {B.icosa(x,y+3.5*sc,z,1.6*sc,'#538a5e');B.icosa(x+.72*sc,y+3.1*sc,z,1.1*sc,'#5c9c67')}}else if(r.kind==='stone'){B.icosa(x,y+.53,z,.72,'#a5aba2');B.icosa(x+.46,y+.25,z+.30,.38,'#7e918c')}else if(r.kind==='herb'){for(let i=0;i<3;i++)B.cone(x+Math.cos(i*2)*.27,y,z+Math.sin(i*2)*.25,.30,.65,'#448b68',5)}else if(r.kind==='fruit'){B.icosa(x,y+.43,z,.47,'#d9a458');B.cone(x,y+.6,z,.28,.32,'#588a53',5)}}dispose(resourcesMesh);resourcesMesh=mesh(B)}
-function person(B,x,z,skin,coat,walking=0,heading=0,playerChar=false){let y=ground(x,z);const c=coat||'#567b67',s=skin||'#bb8761',sin=Math.sin(animation*11),p=walking?sin*.20:0;B.box(x,y+.17,z-.17+p,.27,.72,.34,'#463b35');B.box(x,y+.17,z+.17-p,.27,.72,.34,'#463b35');B.box(x,y+.92,z,.78,1.12,.43,c);B.cone(x,y+.93,z,.70,1.33,c,6,heading);B.cylinder(x,y+1.87,z,.29,.44,s,8);B.icosa(x,y+2.25,z,.43,s);B.icosa(x,y+2.53,z-.04,.47,playerChar?'#302a31':'#503a32');B.box(x-.53,y+1.06,z,.23,.91,.23,s);B.box(x+.53,y+1.06,z,.23,.91,.23,s);
-B.box(x+Math.sin(heading)*.43,y+2.26,z+Math.cos(heading)*.43,.26,.12,.12,'#f3e5cf');if(playerChar){B.box(x-Math.sin(heading)*.43,y+1.25,z-Math.cos(heading)*.43,.79,1.1,.18,'#d0ab69');B.box(x+Math.sin(heading)*.46,y+2.23,z+Math.cos(heading)*.46,.25,.11,.07,'#30333b')}}
+// Asterfall 2.2: anime-inspired layered adventurer, retaining gameplay state.
+function person(B,x,z,skin,coat,walking=0,heading=0,playerChar=false){
+ const y=ground(x,z),s=skin||'#c78c68',c=coat||'#587363',hair=playerChar?'#302832':'#544036',linen='#f1e5d0',gold='#cda765';
+ const step=walking?Math.sin(animation*10)*.22:Math.sin(animation*2.1)*.025,sway=Math.sin(animation*2+x)*.035;
+ for(let side of [-1,1]){let dz=side*step;
+  B.box(x+side*.20,y+.10,z+dz,.29,.35,.43,'#42332e');
+  B.box(x+side*.20,y+.39,z+dz*.85,.24,.53,.27,'#5a4840');
+  B.box(x+side*.20,y+.78,z+dz*.44,.34,.36,.32,'#4a4544');
+  B.box(x+side*.53,y+1.18+side*step*.35,z+sway,.21,.83,.26,linen);
+  B.box(x+side*.54,y+1.06+side*step*.35,z+sway,.25,.25,.31,'#715541');
+  B.box(x+side*.54,y+.95+side*step*.35,z+sway,.21,.20,.28,s);
+ }
+ B.cone(x,y+.65,z,.64,1.1,c,10,heading);
+ B.cone(x,y+.80,z,.69,.22,gold,10,heading);
+ B.box(x,y+1.05,z,.70,.79,.41,linen);
+ B.box(x,y+1.08,z+.23,.59,.10,.12,'#684732');
+ B.box(x,y+1.35,z+.24,.23,.44,.12,c);
+ B.box(x,y+1.30,z+.315,.09,.25,.08,gold);
+ B.box(x,y+1.65,z,.89,.25,.45,c);
+ B.box(x,y+1.77,z+.10,.72,.19,.52,'#e7dbcb');
+ B.box(x,y+1.78,z-.33,.66,.16,.14,playerChar?'#34475b':'#536659');
+ B.box(x+.35,y+1.46,z-.34,.15,.45,.13,'#825c3a');
+ B.box(x+.36,y+1.39,z-.36,.12,.18,.17,gold);
+ B.cylinder(x,y+1.85,z,.17,.22,s,10);
+ B.icosa(x,y+2.17,z,.43,s);
+ B.icosa(x,y+2.34,z-.15,.44,hair);
+ B.cone(x,y+2.15,z-.16,.45,.55,hair,11,heading);
+ for(let side of [-1,1]){
+  B.cone(x+side*.34,y+1.91,z+.03,.17,.59,hair,6);
+  B.box(x+side*.19,y+2.15,z+.375,.13,.095,.09,'#fbfbf2');
+  B.box(x+side*.19,y+2.16,z+.430,.072,.082,.042,playerChar?'#547c76':'#745d4c');
+  B.box(x+side*.19,y+2.22,z+.437,.16,.033,.03,'#302b31');
+ }
+ B.box(x,y+2.01,z+.43,.17,.025,.03,'#915c52');
+ B.cone(x-.15,y+2.29,z+.22,.25,.45,hair,6,.2);
+ B.cone(x+.20,y+2.46,z-.04,.15,.32,hair,6);
+ if(playerChar){
+  B.box(x,y+1.50,z-.49,.67,.64,.13,'#354657');
+  B.cone(x,y+1.2,z-.49,.38,.5,'#354657',7);
+  B.box(x-.37,y+1.12,z+.20,.32,.51,.23,'#74513b');
+  B.box(x-.36,y+1.17,z+.36,.32,.08,.08,gold);
+ }
+}
 function makePeople(){let B=new Batch();for(const n of npcs){let p=npcPosition(n);person(B,p.x,p.y,n.color,n.coat,.1,0,false)}dispose(peopleMesh);peopleMesh=mesh(B)}
 function makePlayer(){let B=new Batch();person(B,player.x,player.y,skins[player.skin]||skins[3],cloaks[player.cloak]||cloaks[0],playerMoving,heading,true);dispose(playerMesh);playerMesh=mesh(B)}
 function makePlacements(){let B=new Batch();for(const p of player.placements||[]){let x=p.x,z=p.y,y=ground(x,z);if(p.type==='campfire'){for(let n=0;n<8;n++){let a=n*Math.PI/4;B.icosa(x+Math.cos(a)*.7,y+.15,z+Math.sin(a)*.7,.25,'#a49b83')}B.cone(x,y+.1,z,.6,1.4,'#eaab5b')}else if(p.type==='cottage'){B.box(x,y,z,4,3.1,3.4,'#d9c5a5');B.roof(x,y+3.1,z,4.4,3.8,1.4,'#a46d58')}else {B.box(x,y,z,2,1.1,1.4,p.type==='planter'?'#a98555':'#8c785b')}}dispose(placementsMesh);placementsMesh=mesh(B)}
